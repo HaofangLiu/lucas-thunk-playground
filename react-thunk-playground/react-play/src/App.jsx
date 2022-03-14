@@ -35,29 +35,41 @@ const 幺儿子 = connect((state) => {
   return <section>幺儿子:{group.name}</section>;
 });
 
-const User = connect((state) => {
-  return { sss: state.user };
-})(({ sss }) => {
+const useSelector = (state) => {
+  return { user: state.user };
+};
+
+const userDispatcher = (dispatch) => {
+  return {
+    updateUser: (attrs) =>
+      dispatch({
+        type: "updateUser",
+        payload: attrs,
+      }),
+  };
+};
+
+const User = connect(useSelector)(({ user }) => {
   console.log("User子运行了");
 
-  return <div>User:{sss.name}</div>;
+  return <div>User:{user.name}</div>;
 });
 
-const UserModifier = connect()(({ dispatch, state, children }) => {
+const UserModifier = connect(
+  useSelector,
+  userDispatcher
+)(({ updateUser, user, children }) => {
   console.log("UserModifier子运行了");
 
   const onChange = (e) => {
     // 怎么能改变原始state呢， 所以改reducer
     // contextValue.appState.user.name = e.target.value;
-    dispatch({
-      type: "updateUser",
-      payload: { name: e.target.value },
-    });
+    updateUser({ name: e.target.value });
   };
   return (
     <div>
       {children}
-      <input value={state.user.name} onChange={onChange} />
+      <input value={user.name} onChange={onChange} />
     </div>
   );
 });

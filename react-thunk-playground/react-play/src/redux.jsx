@@ -45,14 +45,23 @@ const changed = (oldData, newData) => {
 
 // 高阶组件
 // 返回一个函数式组件， 包裹住组件
-export const connect = (selector) => (Component) => {
+export const connect = (selector, mapDispatchToProps) => (Component) => {
   return (props) => {
     const contextValue = useContext(appContext);
+
+    const dispatch = (action) => {
+      contextValue.setState(reducer(contextValue.state, action));
+    };
+
     // 刷新视图函数
     const [, update] = useState({});
     const data = selector
       ? selector(contextValue.state)
       : { state: contextValue.state };
+
+    const dispatcher = mapDispatchToProps
+      ? mapDispatchToProps(dispatch)
+      : { dispatch };
 
     useEffect(() => {
       return contextValue.subscribe(() => {
@@ -71,11 +80,7 @@ export const connect = (selector) => (Component) => {
       //useEffect 用到了来自属性的东西  都要加依赖
     }, [selector]);
 
-    const dispatch = (action) => {
-      contextValue.setState(reducer(contextValue.state, action));
-    };
-
-    return <Component {...props} dispatch={dispatch} {...data} />;
+    return <Component {...props} {...dispatcher} {...data} />;
   };
 };
 
